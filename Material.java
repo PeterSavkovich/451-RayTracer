@@ -17,7 +17,7 @@ public class Material {
 		this.reflectivity = refl;
 	}
 	
-	public Color Shade(Vector point, Vector normal,
+	public Color shade(Vector point, Vector normal,
 					   Vector viewerDir, ArrayList<Vector> lights,
 					   ArrayList<SceneObject> objects, Color bg) {
 		Iterator lightIter = lights.iterator();
@@ -57,11 +57,21 @@ public class Material {
 				Vector offset = point.sum(reflect.scale(0.001));
 				Ray reflectedRay = new Ray(offset, reflect);
 				if (reflectedRay.trace(objects)) {
-					//THIS IS WHERE I LEFT OFF
+					Color reflectedColor = reflectedRay.shade(lights, objects, bg);
+					r += this.reflectivity * reflectedColor.getRed();
+					g += this.reflectivity * reflectedColor.getGreen();
+					b += this.reflectivity * reflectedColor.getBlue();
+				} else {
+					r += this.reflectivity * bg.getRed();
+					g += this.reflectivity * bg.getGreen();
+					g += this.reflectivity * bg.getBlue();
 				}
 			}
 		}
 		
-		return null;
+		if (r > 1) { r = 1; }
+		if (g > 1) { g = 1; }
+		if (b > 1) { b = 1; }
+		return new Color((float)r, (float)g, (float)b);
 	}
 }

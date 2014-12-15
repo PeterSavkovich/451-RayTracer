@@ -5,12 +5,12 @@ import java.util.ArrayList;
 public class Sphere implements SceneObject {
 	Vector center;
 	double radius;
-	Material mat;
+	Material material;
 	
-	public Sphere(Vector center, double radius, Material mat) {
+	public Sphere(Vector center, double radius, Material material) {
 		this.center = center;
 		this.radius = radius;
-		this.mat = mat;
+		this.material = material;
 	}
 	
 	public boolean intersect(Ray r) {
@@ -36,13 +36,13 @@ public class Sphere implements SceneObject {
 		return true;
 	}
 
-	public Color Shade(Ray r, ArrayList<Vector> lights,
+	public Color shade(Ray r, ArrayList<Vector> lights,
 					   ArrayList<SceneObject> objects, Color background) {
 		Vector intersection = r.origin.sum(r.direction.scale(r.time));
 		Vector normal = intersection.difference(this.center);
 		normal.normalize();
 		Vector viewer = r.direction.invert();
 		
-		return this.mat.Shade(intersection, normal, viewer, lights, objects, background);
+		return this.material.shade(intersection, normal, viewer, lights, objects, background);
 	}
 }

@@ -26,8 +26,8 @@ public class Ray {
 		return this.closestObject != null;
 	}
 	
-	public Color Shade(ArrayList<Vector> lights, ArrayList<SceneObject> objects, Color bg) {
-		return this.closestObject.Shade(this, lights, objects, bg);
+	public Color shade(ArrayList<Vector> lights, ArrayList<SceneObject> objects, Color bg) {
+		return this.closestObject.shade(this, lights, objects, bg);
 	}
 	
 	public Vector getPointOfIntersection() {
