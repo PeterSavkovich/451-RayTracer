@@ -1,17 +1,21 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import org.json.*;
+
 
 public class RayTrace {
 	BufferedImage out;
 	Vector ambient;
-	ArrayList<Vector> lights;
+	ArrayList<Vector> lightLocs;
 	ArrayList<SceneObject> objects;
 	Material currentMaterial;
 	
@@ -43,44 +47,46 @@ public class RayTrace {
 	}
 	
 	public void init() {
-		this.height = 5000;
-		this.width = 5000;
-		this.out = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
-		this.field = 50;
+		String json = "";
+		try {
+			json = this.readFile();
+		} catch (IOException e) {
+			System.out.println("Error reading Scene Config.txt");
+		}
 		
-		this.ambient = new Vector(1, 1, 1);
-		this.lights = new ArrayList<Vector>();
-		this.objects = new ArrayList<SceneObject>();
+		if (json.isEmpty()) {
+			this.setSnowmanValues();
+		} else {
+			this.parseInJSON(json);
+		}
 		
-		this.lights.add(new Vector(0, -30, 0));
-		this.lights.add(new Vector(20, -50, 50));
-		//this.lights.add(new Vector(-15, 20, 70));
-		
-		this.currentMaterial = new Material(1, 0.55, 0, .6, .5, .2, 30, .8);
-		//this.objects.add(new Sphere(new Vector(0, 0, 100), 5, this.currentMaterial));
-		//this.objects.add(new Sphere(new Vector(0, 0, 100), 2, this.currentMaterial));
-		//this.objects.add(new Sphere(new Vector(2, -5, 50), 2, this.currentMaterial));
-		this.objects.add(new Sphere(new Vector(-5, 6, 30), 2, this.currentMaterial));
-		//this.objects.add(new Sphere(new Vector(5, 2, 50), 2, this.currentMaterial));
-		//this.objects.add(new Sphere(new Vector(13, 2, 50), 2, this.currentMaterial));
-		this.currentMaterial = new Material(1, 0.98, 0.98, .2, 0.1, .9, 30, 0.01);
-		this.objects.add(new Sphere(new Vector(10, 4, 40), 4, this.currentMaterial));
-		this.objects.add(new Sphere(new Vector(10, -1.75, 40), 3, this.currentMaterial));
-		this.objects.add(new Sphere(new Vector(10, -6, 40), 2, this.currentMaterial));
-		
-		this.currentMaterial = new Material(1, 1, 1, .6, .5, .9, 30, 0);
-		this.objects.add(new Sphere(new Vector(-10, -10, 40), 0.1, this.currentMaterial));
-		this.objects.add(new Sphere(new Vector(15, -15, 40), 0.1, this.currentMaterial));
-		this.objects.add(new Sphere(new Vector(2, -3, 20), 0.1, this.currentMaterial));
-		
-		this.currentMaterial = new Material(205/255.0, 232/255.0, 1, .6, .5, .2, 30, .1);
-		this.objects.add(new Sphere(new Vector(0, 252, 50), 245, this.currentMaterial));
-		
-		this.viewer = new Vector(0, 0, 0);
-		this.lookAt = new Vector(0, 0, 40);
-		this.up = new Vector(1, 0, 0);
-		this.bg = new Color(0, 0, 0);
-		
+		this.setupVectors();
+	}
+	
+	private String readFile() throws IOException {
+	    BufferedReader reader = new BufferedReader(new FileReader("Scene Config.txt"));
+        StringBuilder sb = new StringBuilder();
+	    try {
+	        String line = reader.readLine();
+
+	        while (line != null) {
+	            sb.append(line);
+	            sb.append("\n");
+	            line = reader.readLine();
+	        }
+	    } catch (Exception e) {
+	    	System.out.println("Error reading Scene Config.txt");
+	    } finally {
+	        reader.close();
+	    }
+        return sb.toString();
+	}
+	
+	private void parseInJSON(String jString) {
+		JSONObject json = new JSONObject(jString);
+	}
+	
+	private void setupVectors() {
 		Vector lookDir = this.lookAt.difference(this.viewer);
 		this.Du = lookDir.cross(this.up).normalize();
 		this.Dv = lookDir.cross(this.Du).normalize();
@@ -95,11 +101,50 @@ public class RayTrace {
 		Color toColor;
 		if (ray.trace(this.objects)) {
 			//System.out.println("Hit something");
-			toColor = ray.shade(this.ambient, this.lights, this.objects, this.bg);
+			toColor = ray.shade(this.ambient, this.lightLocs, this.objects, this.bg);
 		} else {
 			//System.out.println("Hit nothing");
 			toColor = this.bg;
 		}
 		this.out.setRGB(col, row, toColor.getRGB());
+	}
+	
+	private void setSnowmanValues() {
+		this.height = 1000;
+		this.width = 1000;
+		this.out = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+		this.field = 50;
+		
+		this.ambient = new Vector(1, 1, 1);
+		this.lightLocs = new ArrayList<Vector>();
+		this.objects = new ArrayList<SceneObject>();
+		
+		this.lightLocs.add(new Vector(0, -30, 0));
+		this.lightLocs.add(new Vector(20, -50, 60));
+		//this.lights.add(new Vector(-15, -20, 70));
+		
+		this.currentMaterial = new Material(1, 0.55, 0, .6, .5, .2, 30, .8);
+		//this.objects.add(new Sphere(new Vector(0, 0, 100), 5, this.currentMaterial));
+		//this.objects.add(new Sphere(new Vector(0, 0, 100), 2, this.currentMaterial));
+		//this.objects.add(new Sphere(new Vector(2, -5, 50), 2, this.currentMaterial));
+		this.objects.add(new Sphere(new Vector(-5, 6, 30), 2, this.currentMaterial));
+		//this.objects.add(new Sphere(new Vector(5, 2, 50), 2, this.currentMaterial));
+		//this.objects.add(new Sphere(new Vector(13, 2, 50), 2, this.currentMaterial));
+		this.currentMaterial = new Material(1, 0.98, 0.98, .2, 0.1, .9, 30, 0.01);
+		this.objects.add(new Sphere(new Vector(10, 4, 40), 4, this.currentMaterial));
+		this.objects.add(new Sphere(new Vector(10, -1.75, 40), 3, this.currentMaterial));
+		this.objects.add(new Sphere(new Vector(10, -6, 40), 2, this.currentMaterial));
+		
+		this.objects.add(new Sphere(new Vector(-10, -10, 40), 0.1, this.currentMaterial));
+		this.objects.add(new Sphere(new Vector(15, -15, 40), 0.1, this.currentMaterial));
+		this.objects.add(new Sphere(new Vector(2, -3, 20), 0.1, this.currentMaterial));
+		
+		this.currentMaterial = new Material(205/255.0, 232/255.0, 1, .6, .5, .2, 30, .1);
+		this.objects.add(new Sphere(new Vector(0, 252, 50), 245, this.currentMaterial));
+		
+		this.viewer = new Vector(0, 0, 0);
+		this.lookAt = new Vector(2.5, 1, 40);
+		this.up = new Vector(1, 0, 0);
+		this.bg = new Color(0, 0, 0);
 	}
 }

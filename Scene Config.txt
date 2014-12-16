@@ -1,0 +1,88 @@
+{
+	"fileName": "Snowman",
+	"height": 1080,
+	"width": 1920,
+	"fov": 50,
+	"camera": { "x": 0, "y": 0, "z": 0 },
+	"focus point": { "x": 2.5, "y": 1, "z": 40 },
+	"background color": { "r": 0, "g": 0, "b": 0 },
+	"ambient": { "r": 1, "g": 1, "b": 1 },
+	"lights": [
+		{ "x": 0, "y": -30, "z": 0 },
+		{ "x": 20, "y": -50, "z": 60 }
+	],
+	"materials": [
+		"gold": {
+			"r": 1,
+			"g": 0.55,
+			"b": 0,
+			"spec": 0.6,
+			"diff": 0.5,
+			"ambi": 0.2,
+			"shin": 30,
+			"refl": 8
+		},
+		"snow": {
+			"r": 1,
+			"g": 0.98,
+			"b": 0.98,
+			"spec": 0.2,
+			"diff": 0.1,
+			"ambi": 0.9,
+			"shin": 30,
+			"refl": 0.01
+		},
+		"ice": {
+			"r": 0.8,
+			"g": 0.91,
+			"b": 1,
+			"spec": 0.6,
+			"diff": 0.5,
+			"ambi": 0.2,
+			"shin": 30,
+			"refl": 0.1
+		}
+	],
+	"objects": [
+		"sphere": {
+			"center": { "x": -5, "y": 6, "z": 30 },
+			"radius": 2,
+			"material": "gold"
+		},
+		"sphere": {
+			"center": { "x": 10, "y": 4, "z": 40 },
+			"radius": 4,
+			"material": "snow"
+		},
+		"sphere": {
+			"center": { "x": 10, "y": -1.75, "z": 40 },
+			"radius": 3,
+			"material": "snow"
+		},
+		"sphere": {
+			"center": { "x": 10, "y": -6, "z": 40 },
+			"radius": 2,
+			"material": "snow"
+		},
+		"sphere": {
+			"center": { "x": -10, "y": -10, "z": 40 },
+			"radius": 0.1,
+			"material": "snow"
+		},
+		"sphere": {
+			"center": { "x": 15, "y": -15, "z": 40 },
+			"radius": 0.1,
+			"material": "snow"
+		},
+		"sphere": {
+			"center": { "x": 2, "y": -3, "z": 20 },
+			"radius": 0.1,
+			"material": "snow"
+		},
+		"sphere": {
+			"center": { "x": 0, "y": 252, "z": 50 },
+			"radius": 245,
+			"material": "ice"
+		}
+	]
+}
