@@ -18,6 +18,7 @@ public class RayTrace {
 	ArrayList<Vector> lightLocs;
 	ArrayList<SceneObject> objects;
 	Material currentMaterial;
+	String fileName;
 	
 	Vector viewer, lookAt, up;
 	Vector Du, Dv, Vp;
@@ -38,7 +39,7 @@ public class RayTrace {
 				rt.setPixel(i, j);
 			}
 		}
-		File f = new File("trace1.png");
+		File f = new File(rt.fileName + ".png");
 		try {
 			ImageIO.write(rt.out, "png", f);
 		} catch (IOException e) {
@@ -83,7 +84,21 @@ public class RayTrace {
 	}
 	
 	private void parseInJSON(String jString) {
-		JSONObject json = new JSONObject(jString);
+		JSONObject json = null;
+		try {
+			json = new JSONObject(jString);
+		} catch (JSONException e) {
+			System.out.println("Error parsing json string");
+		}
+		if (json != null) {
+			try {
+				this.fileName = json.getString("fileName");
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private void setupVectors() {
