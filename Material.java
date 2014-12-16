@@ -17,20 +17,17 @@ public class Material {
 		this.reflectivity = refl;
 	}
 	
-	public Color shade(Vector point, Vector normal,
-					   Vector viewerDir, ArrayList<Vector> lights,
+	public Color shade(Vector point, Vector normal, Vector viewerDir,
+					   Vector ambient, ArrayList<Vector> lights,
 					   ArrayList<SceneObject> objects, Color bg) {
 		Iterator lightIter = lights.iterator();
 		
-		double r = 0;
-		double g = 0;
-		double b = 0;
+		double r = this.ambient * this.r * ambient.x;
+		double g = this.ambient * this.g * ambient.y;
+		double b = this.ambient * this.b * ambient.z;
 		while (lightIter.hasNext()) {
 			Vector light = (Vector) lightIter.next();
-			//Figure out ambient light
-			Vector lDir = light.difference(point);
-			lDir.normalize();
-			//Ignoring directional lights
+			Vector lDir = light.difference(point).normalize();
 			
 			Vector offset = point.sum(lDir.scale(0.001));
 			Ray shadowRay = new Ray(offset, lDir);
@@ -42,10 +39,13 @@ public class Material {
 				b += this.b * diffuse;
 				
 				Vector rDir = normal.scale(2 * lambert).difference(lDir);
-				double specular = this.specular * Math.pow(rDir.dot(viewerDir), this.shininess);
-				r += specular;
-				g += specular;
-				b += specular;
+				double spec = rDir.dot(viewerDir);
+				if (spec > 0) {
+					spec = this.specular * Math.pow(spec, this.shininess);
+					r += spec;
+					g += spec;
+					b += spec;
+				}
 			}
 		}
 		
@@ -57,14 +57,14 @@ public class Material {
 				Vector offset = point.sum(reflect.scale(0.001));
 				Ray reflectedRay = new Ray(offset, reflect);
 				if (reflectedRay.trace(objects)) {
-					Color reflectedColor = reflectedRay.shade(lights, objects, bg);
-					r += this.reflectivity * reflectedColor.getRed();
-					g += this.reflectivity * reflectedColor.getGreen();
-					b += this.reflectivity * reflectedColor.getBlue();
+					Color reflectedColor = reflectedRay.shade(ambient, lights, objects, bg);
+					r += this.reflectivity * reflectedColor.getRed() / 255;
+					g += this.reflectivity * reflectedColor.getGreen() / 255;
+					b += this.reflectivity * reflectedColor.getBlue() / 255;
 				} else {
-					r += this.reflectivity * bg.getRed();
-					g += this.reflectivity * bg.getGreen();
-					g += this.reflectivity * bg.getBlue();
+					r += this.reflectivity * bg.getRed() / 255;
+					g += this.reflectivity * bg.getGreen() / 255;
+					g += this.reflectivity * bg.getBlue() / 255;
 				}
 			}
 		}
@@ -72,6 +72,10 @@ public class Material {
 		if (r > 1) { r = 1; }
 		if (g > 1) { g = 1; }
 		if (b > 1) { b = 1; }
+		if (r < 0 && r > -1) { r = 0; }
+		if (g < 0 && g > -1) { g = 0; }
+		if (b < 0 && b > -1) { b = 0; }
+		if (r < 0 || g < 0 || b < 0) { System.out.println("r:" + r + " g:" + g + " b:" + b); }
 		return new Color((float)r, (float)g, (float)b);
 	}
 }

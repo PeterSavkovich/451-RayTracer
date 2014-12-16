@@ -42,10 +42,8 @@ public class Vector {
 		return this.difference(other).magnitude();
 	}
 	
-	public void normalize() {
+	public Vector normalize() {
 		double magnitude = this.magnitude();
-		this.x /= magnitude;
-		this.y /= magnitude;
-		this.z /= magnitude;
+		return new Vector(this.x /= magnitude, this.y /= magnitude,	this.z /= magnitude);
 	}
 }
