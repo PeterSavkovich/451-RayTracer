@@ -40,7 +40,7 @@ public class Sphere implements SceneObject {
 		return true;
 	}
 
-	public Color shade(Ray r, Vector ambient, ArrayList<Vector> lights,
+	public Color shade(Ray r, Color ambient, ArrayList<Vector> lights,
 					   ArrayList<SceneObject> objects, Color background) {
 		Vector intersection = r.origin.sum(r.direction.scale(r.time));
 		Vector normal = intersection.difference(this.center).normalize();

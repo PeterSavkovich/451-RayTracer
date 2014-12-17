@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
@@ -14,7 +15,7 @@ import org.json.*;
 
 public class RayTrace {
 	BufferedImage out;
-	Vector ambient;
+	Color ambient;
 	ArrayList<Vector> lightLocs;
 	ArrayList<SceneObject> objects;
 	Material currentMaterial;
@@ -28,9 +29,6 @@ public class RayTrace {
 	
 	int height, width;
 	
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		RayTrace rt = new RayTrace();
 		rt.init();
@@ -39,9 +37,13 @@ public class RayTrace {
 				rt.setPixel(i, j);
 			}
 		}
+		System.out.println(rt.fileName);
 		File f = new File(rt.fileName + ".png");
+		System.out.println(f.getAbsolutePath());
 		try {
+			System.out.println(rt.out.toString());
 			ImageIO.write(rt.out, "png", f);
+			System.out.println("I did it");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -53,6 +55,7 @@ public class RayTrace {
 			json = this.readFile();
 		} catch (IOException e) {
 			System.out.println("Error reading Scene Config.txt");
+			e.printStackTrace();
 		}
 		
 		if (json.isEmpty()) {
@@ -60,12 +63,13 @@ public class RayTrace {
 		} else {
 			this.parseInJSON(json);
 		}
-		
+
+		this.out = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		this.setupVectors();
 	}
 	
 	private String readFile() throws IOException {
-	    BufferedReader reader = new BufferedReader(new FileReader("Scene Config.txt"));
+	    BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\savkovpj\\workspace\\RayTracer\\src\\Scene Config.txt"));
         StringBuilder sb = new StringBuilder();
 	    try {
 	        String line = reader.readLine();
@@ -77,6 +81,7 @@ public class RayTrace {
 	        }
 	    } catch (Exception e) {
 	    	System.out.println("Error reading Scene Config.txt");
+			e.printStackTrace();
 	    } finally {
 	        reader.close();
 	    }
@@ -88,14 +93,44 @@ public class RayTrace {
 		try {
 			json = new JSONObject(jString);
 		} catch (JSONException e) {
+			this.setSnowmanValues();
 			System.out.println("Error parsing json string");
+			e.printStackTrace();
 		}
 		if (json != null) {
 			try {
 				this.fileName = json.getString("fileName");
-				
+				this.height = json.getInt("height");
+				this.width = json.getInt("width");
+				this.field = json.getInt("fov");
+				this.viewer = JSONParser.parseVector(json.getJSONObject("camera"));
+				this.lookAt = JSONParser.parseVector(json.getJSONObject("focus point"));
+				this.bg = JSONParser.parseColor(json.getJSONObject("background color"));
+				this.ambient = JSONParser.parseColor(json.getJSONObject("ambient"));
+				this.lightLocs = new ArrayList<Vector>();
+				JSONArray jsonLights = json.getJSONArray("lights");
+				for (int i = 0; i < jsonLights.length(); i++) {
+					JSONObject currLight = jsonLights.getJSONObject(i);
+					this.lightLocs.add(JSONParser.parseVector(currLight));
+				}
+				HashMap<String, Material> materials = new HashMap<String, Material>();
+				JSONArray jsonMaterials = json.getJSONArray("materials");
+				for (int i = 0; i < jsonMaterials.length(); i++) {
+					JSONObject mat = jsonMaterials.getJSONObject(i);
+					materials.put(mat.getString("name"),
+							JSONParser.parseMaterial(mat));
+				}
+				this.objects = new ArrayList<SceneObject>();
+				JSONArray jsonObjects = json.getJSONArray("objects");
+				for (int i = 0; i < jsonObjects.length(); i++) {
+					JSONObject obj = jsonObjects.getJSONObject(i);
+					if (obj.getString("type").equals("sphere")) {
+						this.objects.add(JSONParser.parseSphere(obj, materials));
+					}
+				}
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
+				this.setSnowmanValues();
+				System.out.println("Error parsing json string");
 				e.printStackTrace();
 			}
 		}
@@ -103,6 +138,7 @@ public class RayTrace {
 	
 	private void setupVectors() {
 		Vector lookDir = this.lookAt.difference(this.viewer);
+		this.up = new Vector(1, 0, 0);
 		this.Du = lookDir.cross(this.up).normalize();
 		this.Dv = lookDir.cross(this.Du).normalize();
 		double db = this.width / (2*Math.tan(0.5*this.field*Math.PI/180));
@@ -115,10 +151,8 @@ public class RayTrace {
 		Ray ray = new Ray(this.viewer, dir);
 		Color toColor;
 		if (ray.trace(this.objects)) {
-			//System.out.println("Hit something");
 			toColor = ray.shade(this.ambient, this.lightLocs, this.objects, this.bg);
 		} else {
-			//System.out.println("Hit nothing");
 			toColor = this.bg;
 		}
 		this.out.setRGB(col, row, toColor.getRGB());
@@ -127,10 +161,10 @@ public class RayTrace {
 	private void setSnowmanValues() {
 		this.height = 1000;
 		this.width = 1000;
-		this.out = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 		this.field = 50;
+		this.fileName = "fail";
 		
-		this.ambient = new Vector(1, 1, 1);
+		this.ambient = new Color(1, 1, 1);
 		this.lightLocs = new ArrayList<Vector>();
 		this.objects = new ArrayList<SceneObject>();
 		
@@ -159,7 +193,6 @@ public class RayTrace {
 		
 		this.viewer = new Vector(0, 0, 0);
 		this.lookAt = new Vector(2.5, 1, 40);
-		this.up = new Vector(1, 0, 0);
 		this.bg = new Color(0, 0, 0);
 	}
 }

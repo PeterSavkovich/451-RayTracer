@@ -18,13 +18,13 @@ public class Material {
 	}
 	
 	public Color shade(Vector point, Vector normal, Vector viewerDir,
-					   Vector ambient, ArrayList<Vector> lights,
+					   Color ambient, ArrayList<Vector> lights,
 					   ArrayList<SceneObject> objects, Color bg) {
 		Iterator lightIter = lights.iterator();
 		
-		double r = this.ambient * this.r * ambient.x;
-		double g = this.ambient * this.g * ambient.y;
-		double b = this.ambient * this.b * ambient.z;
+		double r = this.ambient * this.r * ambient.getRed()/255.0;
+		double g = this.ambient * this.g * ambient.getGreen()/255.0;
+		double b = this.ambient * this.b * ambient.getBlue()/255.0;
 		while (lightIter.hasNext()) {
 			Vector light = (Vector) lightIter.next();
 			Vector lDir = light.difference(point).normalize();
@@ -58,13 +58,13 @@ public class Material {
 				Ray reflectedRay = new Ray(offset, reflect);
 				if (reflectedRay.trace(objects)) {
 					Color reflectedColor = reflectedRay.shade(ambient, lights, objects, bg);
-					r += this.reflectivity * reflectedColor.getRed() / 255;
-					g += this.reflectivity * reflectedColor.getGreen() / 255;
-					b += this.reflectivity * reflectedColor.getBlue() / 255;
+					r += this.reflectivity * reflectedColor.getRed()/255.0;
+					g += this.reflectivity * reflectedColor.getGreen()/255.0;
+					b += this.reflectivity * reflectedColor.getBlue()/255.0;
 				} else {
-					r += this.reflectivity * bg.getRed() / 255;
-					g += this.reflectivity * bg.getGreen() / 255;
-					g += this.reflectivity * bg.getBlue() / 255;
+					r += this.reflectivity * bg.getRed()/255.0;
+					g += this.reflectivity * bg.getGreen()/255.0;
+					g += this.reflectivity * bg.getBlue()/255.0;
 				}
 			}
 		}

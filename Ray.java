@@ -26,7 +26,7 @@ public class Ray {
 		return this.closestObject != null;
 	}
 	
-	public Color shade(Vector ambient, ArrayList<Vector> lights, ArrayList<SceneObject> objects, Color bg) {
+	public Color shade(Color ambient, ArrayList<Vector> lights, ArrayList<SceneObject> objects, Color bg) {
 		return this.closestObject.shade(this, ambient, lights, objects, bg);
 	}
 	
